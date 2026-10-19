@@ -12,3 +12,12 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+
+  sensors:
+    build: ./sensors-sim
+    env_file: .env
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    # sem container_name e sem porta publicada, para permitir --scale
+    restart: unless-stopped
