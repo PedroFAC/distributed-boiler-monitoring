@@ -29,3 +29,13 @@ services:
       mosquitto:
         condition: service_healthy
     restart: unless-stopped
+
+  alarms:
+    build: ./alarms-service
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped

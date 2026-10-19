@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caldeira 1 · Alarmes</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --border: #dfe2e8;
+    --text: #1b1f27;
+    --muted: #5d6675;
+    --accent: #2563eb;
+    --ok: #15803d;
+    --warn: #b45309;
+    --warn-bg: #fff4e0;
+    --danger: #b91c1c;
+    --danger-bg: #fde8e8;
+    --chart-grid: #e6e9ef;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b;
+      --surface: #1b2029;
+      --border: #2d3441;
+      --text: #e6e9ef;
+      --muted: #9aa4b5;
+      --accent: #6ea0ff;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --warn-bg: #3a2c10;
+      --danger: #f87171;
+      --danger-bg: #3d1a1a;
+      --chart-grid: #2d3441;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  header {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  h1 { margin: 0; font-size: 20px; }
+  h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .header-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; font-weight: 500;
+  }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .pill.ok .dot { background: var(--ok); }
+  .pill.bad .dot { background: var(--danger); }
+  .pill.wait .dot { background: var(--warn); }
+  button {
+    font: inherit; font-size: 13px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #banner {
+    display: none; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 16px; margin-bottom: 16px; border-radius: 10px;
+    border: 1px solid; font-weight: 600;
+  }
+  #banner.show { display: flex; }
+  #banner.high { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); }
+  #banner.warning { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+  #banner button { color: inherit; border-color: currentColor; background: transparent; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; min-width: 0;
+  }
+  .span-4 { grid-column: span 4; }
+  .span-8 { grid-column: span 8; }
+  .span-12 { grid-column: span 12; }
+  @media (max-width: 800px) {
+    .span-4, .span-8 { grid-column: span 12; }
+  }
+
+  .big { font-size: 44px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .big.over { color: var(--danger); }
+  .big small { font-size: 20px; font-weight: 500; color: var(--muted); }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  .chart-box { position: relative; height: 280px; }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+  .sensor { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .sensor:last-child { border-bottom: 0; }
+  .sensor-id { overflow-wrap: anywhere; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  .tag { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .tag.online { color: var(--ok); border: 1px solid var(--ok); }
+  .tag.offline { color: var(--muted); border: 1px solid var(--border); }
+
+  .alarm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .alarm-head h2 { margin: 0; }
+  .alarm {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 4px 14px; align-items: center;
+    padding: 10px 12px; margin-bottom: 8px; border-radius: 8px; border-left: 5px solid;
+  }
+  .alarm.high { background: var(--danger-bg); border-color: var(--danger); }
+  .alarm.warning { background: var(--warn-bg); border-color: var(--warn); }
+  .alarm .time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  .alarm .label { font-weight: 700; }
+  .alarm.high .label { color: var(--danger); }
+  .alarm.warning .label { color: var(--warn); }
+  .alarm .value { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .empty { color: var(--muted); padding: 8px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Caldeira 1 · Alarmes</h1>
+    <div class="header-right">
+      <button id="sound-btn" type="button" aria-pressed="false">Som desligado</button>
+      <span id="conn" class="pill wait" role="status"><span class="dot"></span><span id="conn-text">Conectando…</span></span>
+    </div>
+  </header>
+
+  <div id="banner" role="alert">
+    <span id="banner-text"></span>
+    <button id="banner-close" type="button">Fechar</button>
+  </div>
+
+  <div class="grid">
+    <section class="card span-4" aria-labelledby="h-avg">
+      <h2 id="h-avg">Média atual</h2>
+      <div id="avg" class="big">—</div>
+      <div id="avg-detail" class="sub">Aguardando a primeira média…</div>
+    </section>
+
+    <section class="card span-4" aria-labelledby="h-used">
+      <h2 id="h-used">Sensores na média</h2>
+      <div id="avg-sensors" class="big">—</div>
+      <div id="avg-window" class="sub">&nbsp;</div>
+    </section>
+
+    <section class="card span-4" aria-labelledby="h-online">
+      <h2 id="h-online">Sensores online</h2>
+      <div id="online-count" class="big">0</div>
+      <div id="online-detail" class="sub">de 0 vistos</div>
+    </section>
+
+    <section class="card span-8" aria-labelledby="h-chart">
+      <h2 id="h-chart">Média ao longo do tempo</h2>
+      <div class="chart-box"><canvas id="chart" aria-label="Gráfico da média de temperatura" role="img"></canvas></div>
+    </section>
+
+    <section class="card span-4" aria-labelledby="h-sensors">
+      <h2 id="h-sensors">Sensores</h2>
+      <ul id="sensors"></ul>
+    </section>
+
+    <section class="card span-12" aria-labelledby="h-alarms">
+      <div class="alarm-head">
+        <h2 id="h-alarms">Alarmes</h2>
+        <button id="clear-btn" type="button">Limpar alarmes</button>
+      </div>
+      <div id="alarms"></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const fmtTime = (ts) => new Date(ts * 1000).toLocaleTimeString('pt-BR');
+const fmt = (v) => Number(v).toFixed(1);
+const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+const S = {
+  alarms: [], history: [], sensors: new Map(), lastAvg: null,
+  threshold: 200, maxAlarms: 50, maxHistory: 200,
+  brokerUp: false, streamUp: false,
+};
+
+// ---------- conexão ----------
+function renderConn() {
+  const el = $('conn');
+  let cls, text;
+  if (!S.streamUp) { cls = 'wait'; text = 'Painel reconectando…'; }
+  else if (S.brokerUp) { cls = 'ok'; text = 'Broker conectado'; }
+  else { cls = 'bad'; text = 'Broker desconectado'; }
+  el.className = 'pill ' + cls;
+  $('conn-text').textContent = text;
+}
+
+// ---------- média ----------
+function renderAverage() {
+  const a = S.lastAvg;
+  if (!a) return;
+  const avgEl = $('avg');
+  avgEl.className = 'big' + (a.avg > S.threshold ? ' over' : '');
+  avgEl.replaceChildren(document.createTextNode(fmt(a.avg)), Object.assign(document.createElement('small'), { textContent: ' °C' }));
+  let detail = 'Atualizado às ' + fmtTime(a.ts);
+  if (a.prev_avg !== null && a.prev_avg !== undefined) {
+    const d = a.avg - a.prev_avg;
+    detail += ` · ${d >= 0 ? '▲' : '▼'} ${d >= 0 ? '+' : ''}${d.toFixed(1)} °C vs. ciclo anterior`;
+  }
+  $('avg-detail').textContent = detail;
+  $('avg-sensors').textContent = a.sensors;
+  $('avg-window').textContent = `janela de ${a.window_s} s`;
+}
+
+// ---------- sensores ----------
+function renderSensors() {
+  const list = $('sensors');
+  const items = [...S.sensors.entries()].sort(([a], [b]) => a.localeCompare(b));
+  let online = 0;
+  list.replaceChildren();
+  if (!items.length) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Nenhum sensor visto ainda.';
+    list.append(li);
+  }
+  for (const [id, info] of items) {
+    if (info.status === 'online') online++;
+    const li = document.createElement('li');
+    li.className = 'sensor';
+    const name = document.createElement('span');
+    name.className = 'sensor-id';
+    name.textContent = id;
+    const tag = document.createElement('span');
+    tag.className = 'tag ' + info.status;
+    tag.textContent = info.status === 'online' ? 'online' : 'offline';
+    tag.title = 'desde ' + fmtTime(info.ts);
+    li.append(name, tag);
+    list.append(li);
+  }
+  $('online-count').textContent = online;
+  $('online-detail').textContent = `de ${items.length} ${items.length === 1 ? 'visto' : 'vistos'}`;
+}
+
+// ---------- alarmes ----------
+function alarmRow(a) {
+  const row = document.createElement('div');
+  row.className = 'alarm ' + a.severity;
+  const time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = fmtTime(a.ts);
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = (a.severity === 'high' ? '🔴 ' : '🟠 ') + a.label;
+  const value = document.createElement('span');
+  value.className = 'value';
+  let text = `média = ${fmt(a.avg)} °C`;
+  if (a.prev_avg !== null && a.prev_avg !== undefined) text += ` (anterior ${fmt(a.prev_avg)} °C)`;
+  value.textContent = text;
+  row.append(time, label, value);
+  return row;
+}
+
+function renderAlarms() {
+  const box = $('alarms');
+  box.replaceChildren();
+  if (!S.alarms.length) {
+    const p = document.createElement('div');
+    p.className = 'empty';
+    p.textContent = 'Nenhum alarme.';
+    box.append(p);
+    return;
+  }
+  for (const a of S.alarms) box.append(alarmRow(a));
+}
+
+// ---------- banner e som ----------
+let bannerTimer;
+function showBanner(a) {
+  const b = $('banner');
+  b.className = 'show ' + a.severity;
+  $('banner-text').textContent = `${a.label} · média = ${fmt(a.avg)} °C às ${fmtTime(a.ts)}`;
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(hideBanner, 10000);
+}
+function hideBanner() { $('banner').className = ''; }
+$('banner-close').addEventListener('click', hideBanner);
+
+let audioCtx = null;
+let soundOn = false;
+$('sound-btn').addEventListener('click', () => {
+  soundOn = !soundOn;
+  if (soundOn && !audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (soundOn && audioCtx.state === 'suspended') audioCtx.resume();
+  $('sound-btn').textContent = soundOn ? 'Som ligado' : 'Som desligado';
+  $('sound-btn').setAttribute('aria-pressed', String(soundOn));
+  if (soundOn) beep(660, 1);
+});
+function beep(freq, count) {
+  if (!soundOn || !audioCtx) return;
+  for (let i = 0; i < count; i++) {
+    const t = audioCtx.currentTime + i * 0.25;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.2);
+  }
+}
+function notify(a) {
+  showBanner(a);
+  if (a.severity === 'high') beep(880, 3); else beep(660, 1);
+}
+
+$('clear-btn').addEventListener('click', () => {
+  fetch('/api/alarms/clear', { method: 'POST' }).catch(() => {});
+});
+
+// ---------- gráfico ----------
+let chart = null;
+function applyChartTheme() {
+  if (!chart) return;
+  const grid = cssVar('--chart-grid'), muted = cssVar('--muted');
+  chart.data.datasets[0].borderColor = cssVar('--accent');
+  chart.data.datasets[0].backgroundColor = cssVar('--accent');
+  chart.data.datasets[1].borderColor = cssVar('--danger');
+  for (const axis of ['x', 'y']) {
+    chart.options.scales[axis].ticks.color = muted;
+    chart.options.scales[axis].grid.color = grid;
+  }
+  chart.options.scales.y.title.color = muted;
+  chart.options.plugins.legend.labels.color = muted;
+  chart.update('none');
+}
+function buildChart() {
+  if (typeof Chart === 'undefined') return;  // CDN indisponível: o resto do painel segue funcionando
+  chart = new Chart($('chart'), {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Média (°C)', data: [], borderWidth: 2, pointRadius: 2, tension: 0.25 },
+        { label: 'Limite de temperatura alta', data: [], borderWidth: 1.5, borderDash: [6, 4], pointRadius: 0 },
+      ],
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'bottom', labels: {} } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 6 }, grid: {} },
+        y: { title: { display: true, text: '°C' }, ticks: {}, grid: {} },
+      },
+    },
+  });
+  applyChartTheme();
+}
+function renderChart() {
+  if (!chart) return;
+  chart.data.labels = S.history.map((p) => fmtTime(p.ts));
+  chart.data.datasets[0].data = S.history.map((p) => p.avg);
+  chart.data.datasets[1].data = S.history.map(() => S.threshold);
+  chart.update('none');
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyChartTheme);
+
+// ---------- stream ----------
+function applyState(st) {
+  S.threshold = st.config.high_threshold;
+  S.maxAlarms = st.config.max_alarms;
+  S.maxHistory = st.config.max_history;
+  S.brokerUp = st.broker_connected;
+  S.lastAvg = st.last_average;
+  S.history = st.history;
+  S.alarms = st.alarms;
+  S.sensors = new Map(st.sensors.map((s) => [s.id, { status: s.status, ts: s.ts }]));
+  renderConn(); renderAverage(); renderSensors(); renderAlarms(); renderChart();
+}
+
+function connect() {
+  const es = new EventSource('/api/stream');
+  const on = (name, fn) => es.addEventListener(name, (e) => fn(JSON.parse(e.data)));
+
+  es.onopen = () => { S.streamUp = true; renderConn(); };
+  es.onerror = () => { S.streamUp = false; renderConn(); };  // o navegador reconecta sozinho
+
+  on('state', applyState);
+  on('connection', (d) => { S.brokerUp = d.broker_connected; renderConn(); });
+  on('average', (d) => {
+    S.lastAvg = d.last;
+    S.history.push(d.point);
+    if (S.history.length > S.maxHistory) S.history.shift();
+    renderAverage(); renderChart();
+  });
+  on('sensor', (d) => {
+    S.sensors.set(d.id, { status: d.status, ts: d.ts });
+    renderSensors();
+  });
+  on('alarm', (a) => {
+    S.alarms.unshift(a);
+    if (S.alarms.length > S.maxAlarms) S.alarms.pop();
+    renderAlarms();
+    notify(a);
+  });
+  on('clear', () => { S.alarms = []; renderAlarms(); hideBanner(); });
+}
+
+buildChart();
+renderSensors();
+renderAlarms();
+connect();
+</script>
+</body>
+</html>
