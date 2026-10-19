@@ -21,3 +21,11 @@ services:
         condition: service_healthy
     # sem container_name e sem porta publicada, para permitir --scale
     restart: unless-stopped
+
+  cat:
+    build: ./cat-service
+    env_file: .env
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
