@@ -1,4 +1,4 @@
-# Projeto MQTT: Monitoramento de Caldeira
+# Distributed Boiler Monitoring (MQTT): Monitoramento de Caldeira
 
 Contexto: trabalho acadêmico (pós-graduação). Sensores de temperatura enviam dados a cada 60 s a um broker MQTT. O serviço CAT calcula a média dos últimos 120 s e publica eventos. O serviço Alarms exibe os alarmes em uma interface gráfica. Ao menos um sensor deve ser real (app de smartphone com React Native + Expo).
 

@@ -47,8 +47,8 @@ Com os sensores normais perto de 80 °C, a média de 3 sensores + 1 em spike nã
 
 ```bash
 docker compose up -d --scale sensors=0
-docker run --rm --network mqtt-boiler_default --env-file .env \
-  -e SPIKE=true -e SPIKE_STEP=30 -e SENSOR_ID=spike-test mqtt-boiler-sensors
+docker run --rm --network distributed-boiler-monitoring_default --env-file .env \
+  -e SPIKE=true -e SPIKE_STEP=30 -e SENSOR_ID=spike-test distributed-boiler-monitoring-sensors
 docker compose up -d --scale sensors=3        # restaura
 ```
 Em outro terminal: `docker compose logs -f cat` e `docker compose logs -f alarms`.

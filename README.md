@@ -1,4 +1,6 @@
-# Monitoramento de Caldeira com MQTT
+# Distributed Boiler Monitoring
+
+**Monitoramento distribuído de caldeira com MQTT.**
 
 Trabalho da disciplina de **Sistemas Distribuídos** do Mestrado em Ciência da Computação da **Universidade Federal do Ceará (UFC)**. Sensores de temperatura publicam leituras em um broker MQTT, um serviço **CAT** calcula a média móvel e detecta eventos, e um serviço **Alarms** exibe os alarmes em um painel web em tempo real.
 
@@ -123,7 +125,7 @@ O roteiro dos testes de integração (pub/sub, Last Will, spike) está em [docs/
 ## Estrutura do repositório
 
 ```
-mqtt-boiler/
+distributed-boiler-monitoring/
 ├── docker-compose.yml
 ├── .env
 ├── mosquitto/mosquitto.conf

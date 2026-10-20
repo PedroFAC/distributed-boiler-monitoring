@@ -59,7 +59,7 @@ Evento:
 ## 3. Estrutura do repositório
 
 ```
-mqtt-boiler/
+distributed-boiler-monitoring/
 ├── docker-compose.yml
 ├── .env
 ├── mosquitto/

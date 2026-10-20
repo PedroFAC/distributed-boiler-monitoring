@@ -1,3 +1,5 @@
+name: distributed-boiler-monitoring
+
 services:
   mosquitto:
     image: eclipse-mosquitto:2
