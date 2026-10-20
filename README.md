@@ -4,14 +4,14 @@
 
 Trabalho da disciplina de **Sistemas Distribuídos** do Mestrado em Ciência da Computação da **Universidade Federal do Ceará (UFC)**. Sensores de temperatura publicam leituras em um broker MQTT, um serviço **CAT** calcula a média móvel e detecta eventos, e um serviço **Alarms** exibe os alarmes em um painel web em tempo real.
 
-> **Status:** Fases 1 a 4 concluídas (broker, sensores simulados, CAT e Alarms). Faltam o sensor real (app Expo, Fase 5) e a integração final (Fase 6). Veja [docs/fases.md](docs/fases.md).
+> **Status:** Fases 1 a 5 concluídas (broker, sensores simulados, CAT, Alarms e o sensor real no app Expo). Falta a integração final (Fase 6). Veja [docs/fases.md](docs/fases.md).
 
 ## Visão geral
 
 ```mermaid
 flowchart LR
     S["Sensores simulados<br/>(N containers)"] -->|temperature / status| B[("Mosquitto<br/>1883 MQTT · 9001 WS")]
-    M["App Expo no celular<br/>(Fase 5, pendente)"] -.->|WebSocket 9001| B
+    M["App Expo no celular<br/>(sensor real)"] -->|WebSocket 9001| B
     B -->|temperature| C["CAT<br/>média da janela + regras"]
     C -->|cat/average · events/*| B
     B -->|events · average · status| A["Alarms<br/>FastAPI + SSE"]
@@ -24,7 +24,7 @@ flowchart LR
 | Sensores simulados | `sensors-sim/` | Python 3.12 + paho-mqtt | Publicam temperatura; escaláveis com `--scale` |
 | CAT | `cat-service/` | Python 3.12 + paho-mqtt | Média da janela e eventos de alarme |
 | Alarms | `alarms-service/` | Python 3.12 + FastAPI + SSE + Chart.js | Painel web e saída no console |
-| Sensor real | `mobile-app/` | React Native + Expo | *Pendente (Fase 5)* |
+| Sensor real | `mobile-app/` | React Native + Expo | Sensor real: luminosidade do celular convertida em temperatura, com slider de aquecimento |
 
 ## Pré-requisitos
 
@@ -104,6 +104,20 @@ Evento:
 {"type": "high_temperature", "avg": 213.5, "prev_avg": 198.0, "ts": 1760000060}
 ```
 
+## App Expo (sensor real)
+
+O app roda no host, fora do Docker, e usa o **Expo Go** (SDK 57). O celular precisa estar na mesma rede do notebook.
+
+```bash
+cd mobile-app
+npm install
+npx expo start        # escanear o QR code com o Expo Go
+```
+
+Na tela do app, informe o **IP do notebook** (`hostname -I`, nunca `localhost`), a porta `9001`, o ID do sensor e toque em **Conectar**. O app publica a cada 60 s (configurável) em `plant/boiler1/sensors/<id>/temperature` com `source: "phone-light"`, registra o Last Will em `/status` e publica `online` (retain) ao conectar. O **slider de aquecimento** soma até +60 °C à leitura para provocar os alarmes. Vários celulares podem conectar ao mesmo tempo, cada um com seu ID.
+
+O `expo-sensors` não expõe temperatura. A leitura vem do sensor de luminosidade (só Android; no iOS vale a base mais o slider), convertido para a faixa de 180 a 200 °C.
+
 ## Testes
 
 Testes unitários da lógica pura (sem MQTT, sem Docker):
@@ -132,7 +146,7 @@ distributed-boiler-monitoring/
 ├── sensors-sim/        # sensor.py, Dockerfile, requirements.txt
 ├── cat-service/        # window.py, rules.py, cat.py, tests/
 ├── alarms-service/     # state.py, mqtt_client.py, main.py, static/index.html, tests/
-├── mobile-app/         # (Fase 5, pendente)
+├── mobile-app/         # App.js, src/sensor.js (lógica pura), src/mqtt.js
 ├── docs/
 └── plano-projeto-mqtt.md
 ```

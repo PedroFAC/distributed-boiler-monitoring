@@ -82,6 +82,8 @@ Separado em lógica pura e I/O:
 | Alarme de temperatura alta só na transição | Evita uma enxurrada de alarmes iguais enquanto a média fica alta |
 | Configuração só por variáveis de ambiente | Permite reduzir tempos em desenvolvimento e voltar a 60/120 s na entrega sem tocar no código |
 | Expo fora do Docker | O Metro bundler precisa ser alcançado pelo celular na rede local |
+| App no SDK 57 | É a versão suportada pelo Expo Go instalado; o código só usa APIs estáveis |
+| `sensor.js` separado do `mqtt.js` | Conversão e payload ficam puros, sem React nem MQTT |
 | Chart.js via CDN | Evita empacotar a biblioteca; sem internet no navegador, só o gráfico deixa de funcionar |
 | `state.py` separado do MQTT | Permite testar a lógica do painel sem broker (arquivo a mais em relação ao plano original) |
 

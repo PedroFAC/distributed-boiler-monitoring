@@ -74,6 +74,12 @@ curl -N localhost:8080/api/stream
 curl -X POST localhost:8080/api/alarms/clear
 ```
 
+### 6. App Expo
+
+Com os containers de pé, rodar `cd mobile-app && npx expo start`, abrir no Expo Go, informar o IP do notebook e a porta 9001 e conectar.
+
+**Esperado:** `mosquitto_sub -h localhost -t "plant/#" -v` mostra `status` = `online` e uma leitura com `"source": "phone-light"` a cada intervalo; o celular aparece como online no painel; subir o slider de aquecimento gera `sudden_increase` (e `high_temperature` se a média passar de 200 °C); ao tocar em Desconectar o status vira `offline`; fechar o app à força também leva a `offline`, pelo Last Will, depois do keepalive.
+
 ## Resultados registrados
 
 Testes executados durante o desenvolvimento:
@@ -87,5 +93,6 @@ Testes executados durante o desenvolvimento:
 | Last Will após `docker kill` | Passou |
 | Spike com CAT e eventos | Passou |
 | SSE do Alarms, console e botão de limpar | Passaram |
+| App Expo (celular e tablet): online no painel e slider gera `sudden_increase` | Passou (manual) |
 | Visual do painel no navegador | **Não verificado** |
 | Cliente MQTT.js completo no WebSocket | **Não testado** |

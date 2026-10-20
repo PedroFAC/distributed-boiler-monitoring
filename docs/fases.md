@@ -6,7 +6,7 @@
 | 2 | Sensores simulados | Concluída |
 | 3 | Serviço CAT | Concluída |
 | 4 | Serviço Alarms com interface gráfica | Concluída |
-| 5 | Aplicativo Expo (sensor real) | Pendente |
+| 5 | Aplicativo Expo (sensor real) | Concluída |
 | 6 | Integração, documentação e entrega | Pendente |
 
 ## Fase 1: Broker e infraestrutura
@@ -43,9 +43,19 @@ Pontos principais: buffer com `Lock`, média das médias por sensor, `sudden_inc
 
 **Ajuste de desenvolvimento:** para gerar mais alarmes sem alterar os limiares, `SENSOR_BASE=195` e `SENSOR_NOISE=12` no `.env`. Com 3 sensores, saíram 7 eventos em 65 s.
 
-## Fase 5: Aplicativo Expo (pendente)
+## Fase 5: Aplicativo Expo (sensor real)
 
-Planejado: app React Native + Expo em `mobile-app/`, conectado por WebSocket (porta 9001), publicando um sensor real (luminosidade ou barômetro convertido para a faixa de temperatura) com Last Will, `online` retido e slider de aquecimento. Pendência de confirmar com o professor se o sensor precisa ser a temperatura real da bateria, o que exige *development build*.
+**Entregue:** `mobile-app/` com `App.js` (tela), `src/sensor.js` (conversão luminosidade → temperatura e payload, sem React nem MQTT) e `src/mqtt.js` (conexão `paho-mqtt` por WebSocket, Last Will e publicação). A tela tem IP, porta, intervalo e ID editáveis, botão conectar/desconectar com indicador, leitura atual, slider de aquecimento (+0 a +60 °C), log das últimas 20 publicações e `expo-keep-awake`.
+
+**Critério de pronto:** o celular aparece como online no painel e o slider provoca o evento de aumento repentino.
+**Resultado:** atendido, testado manualmente em um celular e em um tablet com o Expo Go.
+
+**Decisões e ajustes:**
+- O projeto usa o **SDK 57**, porque é o que o Expo Go instalado no celular suporta (o template tinha vindo com o SDK 58).
+- `SafeAreaView` vem de `react-native-safe-area-context`, pois o do React Native está obsoleto.
+- Ao desconectar pelo botão, o app publica `offline` antes de fechar, já que uma desconexão limpa não dispara o Last Will.
+- Sensor: luminosidade (só Android). A temperatura real da bateria exigiria *development build* e continua como pendência a confirmar com o professor.
+- Não há teste automatizado do app.
 
 ## Fase 6: Integração e entrega (pendente)
 
